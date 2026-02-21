@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Test styles */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.test-red {
+  color: red !important;
+}
