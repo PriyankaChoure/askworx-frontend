@@ -6,9 +6,97 @@ import SubscriptionBadge from '../components/SubscriptionBadge';
 import SubscriptionWarningBanner from '../components/SubscriptionWarningBanner';
 import ProjectTable from '../components/ProjectTable';
 
+const normalizeDate = (dateInput) => {
+  if (!dateInput) return null;
+  // Accept Date object or ISO string.
+  const d = new Date(dateInput);
+  if (!isNaN(d.getTime())) return d;
+
+  if (typeof dateInput === 'string') {
+    // Handle date-only strings like YYYY-MM-DD to avoid timezone shift.
+    const match = dateInput.match(/^(\d{4}-\d{2}-\d{2})$/);
+    if (match) {
+      return new Date(`${match[1]}T00:00:00.000Z`);
+    }
+  }
+
+  return null;
+};
+
+const formatDate = (dateInput) => {
+  const d = normalizeDate(dateInput);
+  return d ? d.toLocaleDateString() : 'N/A';
+};
+
+const calculateSubscriptionStatus = (startDateInput, endDateInput) => {
+  const startDate = normalizeDate(startDateInput);
+  const endDate = normalizeDate(endDateInput);
+
+  if (!startDate || !endDate || endDate < startDate) {
+    return {
+      totalMonths: 0,
+      remainingMonths: 0,
+      remainingDays: 0,
+      isExpiringSoon: false,
+      isExpired: false,
+      statusMessage: 'Invalid subscription dates',
+    };
+  }
+
+  const totalMonths = Math.max(
+    0,
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + (endDate.getDate() >= startDate.getDate() ? 1 : 0)
+  );
+
+  const today = new Date();
+  const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  const endUTC = new Date(Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()));
+
+  const isExpired = todayUTC > endUTC;
+
+  let remainingMonths = 0;
+  let remainingDays = 0;
+
+  if (!isExpired) {
+    remainingMonths = (endUTC.getFullYear() - todayUTC.getFullYear()) * 12 + (endUTC.getMonth() - todayUTC.getMonth());
+    if (endUTC.getDate() < todayUTC.getDate()) remainingMonths -= 1;
+    remainingMonths = Math.max(0, remainingMonths);
+
+    const futureDate = new Date(Date.UTC(todayUTC.getFullYear(), todayUTC.getMonth(), todayUTC.getDate()));
+    futureDate.setUTCMonth(futureDate.getUTCMonth() + remainingMonths);
+
+    const msPerDay = 1000 * 60 * 60 * 24;
+    remainingDays = Math.ceil((endUTC - futureDate) / msPerDay);
+    remainingDays = Math.max(0, remainingDays);
+
+    if (remainingMonths === 0 && remainingDays > 0) {
+      // if less than one month remains, remainingDays may reflect this partial month.
+      remainingMonths = 0;
+    }
+  }
+
+  const isExpiringSoon = !isExpired && remainingMonths <= 1;
+
+  const statusMessage = isExpired
+    ? 'Your subscription has expired.'
+    : isExpiringSoon
+    ? 'Your subscription will expire soon. Please renew.'
+    : 'Subscription active';
+
+  return {
+    totalMonths,
+    remainingMonths,
+    remainingDays,
+    isExpiringSoon,
+    isExpired,
+    statusMessage,
+  };
+};
+
 const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
   const [subscription, setSubscription] = useState(null);
+  const isFreeUser = user?.isFreeSubscriber;
   const [projects, setProjects] = useState([]);
   const [groupedProjects, setGroupedProjects] = useState({});
   // const [availableFilters, setAvailableFilters] = useState({});
@@ -36,13 +124,13 @@ const Dashboard = () => {
 
   // Fetch projects when filters change
   useEffect(() => {
-    if (!subscription) {    
+    if (!subscription) {
       return;
     }
 
     setFilters({
-      states: subscription.allowedStates.map(state=> state.name),
-      sectors: subscription.allowedSectors.map(sector => sector.name),
+      states: subscription.allowedStates?.map(state => state.name) || [],
+      sectors: subscription.allowedSectors?.map(sector => sector.name) || [],
       dateFilter: {
         type: 'Last_7_Days',
         months: [],
@@ -62,12 +150,37 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const sub = await getUserSubscription(user);
-      setSubscription(sub);
+
+      console.log('Subscription API data:', sub);
+
+      const start = sub.startDate || sub.fromDate;
+      const end = sub.endDate || sub.toDate;
+      const calculated = calculateSubscriptionStatus(start, end);
+
+      const normalizedSubscription = {
+        ...sub,
+        startDate: start,
+        endDate: end,
+        ...calculated,
+        isExpiring: calculated.isExpiringSoon,
+        isExpired: calculated.isExpired,
+        remainingTimeDisplay: calculated.isExpired
+          ? 'Expired'
+          : calculated.isExpiringSoon
+          ? `${calculated.remainingDays} day${calculated.remainingDays !== 1 ? 's' : ''} remaining`
+          : `${calculated.remainingMonths} month${calculated.remainingMonths !== 1 ? 's' : ''} remaining`,
+      };
+
+      setSubscription(normalizedSubscription);
 
       // Show warning modal on first load if expiring soon
-      if (sub.isExpiring && !localStorage.getItem('subscription-expiring-warned')) {
+      if (normalizedSubscription.isExpiring && !localStorage.getItem('subscription-expiring-warned')) {
         setIsSubscriptionModalOpen(true);
         localStorage.setItem('subscription-expiring-warned', 'true');
+      }
+      // if the server indicates trial/free status in subscription object use that too
+      if (normalizedSubscription.isFreeSubscriber || normalizedSubscription.isTrial) {
+        // track locally if needed for UI
       }
     } catch (err) {
       console.error('Failed to fetch subscription:', err);
@@ -197,7 +310,7 @@ const Dashboard = () => {
             <h2 className="text-2xl font-bold text-gray-900">Projects Data</h2>
             <button
               onClick={handleExportExcel}
-              disabled={exporting || projects.length === 0}
+              disabled={exporting || projects.length === 0 || isFreeUser || subscription?.isTrial}
               className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded transition flex items-center gap-2"
             >
               {exporting ? (
@@ -216,11 +329,18 @@ const Dashboard = () => {
             </button>
           </div>
 
+          {/* trial users cannot download message */}
+          {(isFreeUser || subscription?.isTrial) && (
+            <div className="mt-2 text-sm text-red-600">
+              Trial/free subscribers can view data but downloads are disabled.
+            </div>
+          )}
+
           <ProjectTable
             projects={projects}
             groupedProjects={groupedProjects}
-            allowedStates={subscription.allowedStates.map(state=> state.name)}
-            allowedSectors={subscription.allowedSectors.map(sector=>sector.name)}
+            allowedStates={subscription?.allowedStates?.map(state => state.name) || []}
+            allowedSectors={subscription?.allowedSectors?.map(sector => sector.name) || []}
             filters={filters}
             onFilterChange={setFilters}
             isLoading={projectsLoading}

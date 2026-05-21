@@ -12,6 +12,16 @@ const SubscriptionBadge = ({ subscription }) => {
     );
   }
 
+  // show trial badge if applicable
+  if (subscription.isTrial) {
+    return (
+      <div className="inline-flex items-center px-4 py-2 bg-yellow-100 border border-yellow-300 rounded-full">
+        <span className="inline-block w-2 h-2 bg-yellow-600 rounded-full mr-2"></span>
+        <span className="text-sm font-semibold text-yellow-800">Trial User</span>
+      </div>
+    );
+  }
+
   if (subscription.isExpiring) {
     return (
       <div className="inline-flex items-center px-4 py-2 bg-red-100 border border-red-300 rounded-full animate-pulse">

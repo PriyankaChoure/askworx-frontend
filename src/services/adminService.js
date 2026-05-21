@@ -29,6 +29,11 @@ export const getDashboardStats = async () => {
   return response.data;
 };
 
+/**
+ * assignmentData may include:
+ * { userId, planId, allowedStates, allowedSectors, isPanIndia,
+ *   fromDate, toDate, isTrial }
+ */
 export const assignPlan = async (assignmentData) => {
   const response = await apiClient.post(ADMIN_API.ASSIGN_PLAN, assignmentData);
   return response.data;

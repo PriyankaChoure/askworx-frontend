@@ -4,11 +4,14 @@ const SubscriptionModal = ({ subscription, isOpen, onClose }) => {
   if (!isOpen || !subscription) return null;
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    if (!date) return 'N/A';
+    const parsed = new Date(date);
+    if (Number.isNaN(parsed.getTime())) {
+      const normalized = new Date(`${date}T00:00:00.000Z`);
+      if (Number.isNaN(normalized.getTime())) return 'Invalid Date';
+      return normalized.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    return parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   return (
@@ -40,6 +43,9 @@ const SubscriptionModal = ({ subscription, isOpen, onClose }) => {
               <h3 className="text-sm font-semibold text-gray-600 mb-2">PLAN</h3>
               <p className="text-2xl font-bold text-gray-900">{subscription.planName}</p>
               <p className="text-sm text-gray-500 mt-1">Type: {subscription.planType}</p>
+              {subscription.isTrial && (
+                <p className="text-yellow-700 text-xs mt-1">This is a trial/free subscription; downloads disabled.</p>
+              )}
             </div>
 
             {/* Dates */}
@@ -117,11 +123,13 @@ const SubscriptionModal = ({ subscription, isOpen, onClose }) => {
                     ? 'text-yellow-800'
                     : 'text-green-800'
                 }`}>
-                  {subscription.isExpired
-                    ? 'Subscription Expired'
-                    : subscription.isExpiring
-                    ? 'Subscription Expiring Soon'
-                    : 'Subscription Active'}
+                  {subscription.statusMessage || (
+                    subscription.isExpired
+                      ? 'Subscription Expired'
+                      : subscription.isExpiring
+                      ? 'Subscription Expiring Soon'
+                      : 'Subscription Active'
+                  )}
                 </p>
                 <p className={`text-xs mt-1 ${
                   subscription.isExpired

@@ -15,7 +15,10 @@ const Users = () => {
     planId: '',
     allowedStates: [],
     allowedSectors: [],
-    isPanIndia: false
+    isPanIndia: false,
+    fromDate: '',
+    toDate: '',
+    isTrial: false
   });
 
   useEffect(() => {
@@ -63,7 +66,10 @@ const Users = () => {
       planId: '',
       allowedStates: [],
       allowedSectors: sectors.map(s => s._id),
-      isPanIndia: false
+      isPanIndia: false,
+      fromDate: '',
+      toDate: '',
+      isTrial: false
     });
     setShowAssignModal(true);
   };
@@ -92,7 +98,10 @@ const Users = () => {
         planId: assignForm.planId,
         allowedStates: assignForm.allowedStates,
         allowedSectors: assignForm.allowedSectors,
-        isPanIndia: assignForm.isPanIndia
+        isPanIndia: assignForm.isPanIndia,
+        fromDate: assignForm.fromDate || undefined,
+        toDate: assignForm.toDate || undefined,
+        isTrial: assignForm.isTrial
       });
       setShowAssignModal(false);
       fetchUsers();
@@ -314,6 +323,39 @@ const Users = () => {
                       className="mr-2"
                     />
                     Pan India Access
+                  </label>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                  <input
+                    type="date"
+                    name="fromDate"
+                    value={assignForm.fromDate}
+                    onChange={handleAssignFormChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                  <input
+                    type="date"
+                    name="toDate"
+                    value={assignForm.toDate}
+                    onChange={handleAssignFormChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    <input
+                      type="checkbox"
+                      name="isTrial"
+                      checked={assignForm.isTrial}
+                      onChange={handleAssignFormChange}
+                      className="mr-2"
+                    />
+                    Mark as trial/free subscription (read-only, no downloads)
                   </label>
                 </div>
                 {!assignForm.isPanIndia && (

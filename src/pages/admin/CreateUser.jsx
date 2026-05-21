@@ -2,15 +2,84 @@ import React, { useState, useEffect } from 'react';
 import { getSubscriptionPlans, createUser, getStates, getSectors } from '../../services/adminService';
 import { PLAN_TYPES } from '../../utils/constants';
 
+const calculateSubscriptionDetails = (startDateStr, endDateStr) => {
+  if (!startDateStr || !endDateStr) {
+    return {
+      totalMonths: 0,
+      remainingMonths: 0,
+      remainingDays: 0,
+    };
+  }
+
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+    return {
+      totalMonths: 0,
+      remainingMonths: 0,
+      remainingDays: 0,
+    };
+  }
+
+  const millisInDay = 1000 * 60 * 60 * 24;
+  const totalDays = Math.floor((end - start) / millisInDay) + 1;
+  const totalMonths = Math.max(0, Math.ceil(totalDays / 30));
+
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const remainingDaysRaw = Math.ceil((end - todayStart) / millisInDay);
+
+  const remainingDays = remainingDaysRaw > 0 ? remainingDaysRaw : 0;
+  const remainingMonths = remainingDays > 0 ? Math.floor(remainingDays / 30) : 0;
+
+  return {
+    totalMonths,
+    remainingMonths,
+    remainingDays,
+  };
+};
+
+const SubscriptionSummary = ({ planName, startDate, endDate, info }) => {
+  const isExpiringSoon = info.remainingMonths <= 1 && (info.remainingMonths > 0 || info.remainingDays > 0);
+
+  return (
+    <div className="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50">
+      <h3 className="text-lg font-semibold text-gray-800 mb-2">Subscription Summary</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
+        <div><span className="font-medium">Selected Plan:</span> {planName || 'N/A'}</div>
+        <div><span className="font-medium">Start Date:</span> {startDate || 'N/A'}</div>
+        <div><span className="font-medium">End Date:</span> {endDate || 'N/A'}</div>
+        <div><span className="font-medium">Total Duration (months):</span> {info.totalMonths}</div>
+        <div><span className="font-medium">Remaining Months:</span> {info.remainingMonths}</div>
+        <div><span className="font-medium">Remaining Days:</span> {info.remainingDays}</div>
+      </div>
+      {isExpiringSoon && (
+        <p className="mt-3 text-sm font-semibold text-red-600">Subscription will expire soon</p>
+      )}
+      {info.remainingDays === 0 && info.totalMonths > 0 && (
+        <p className="mt-3 text-sm font-semibold text-red-600">Subscription has expired</p>
+      )}
+    </div>
+  );
+};
+
 const CreateUser = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     role: 'user',
     subscriptionPlan: '',
+    subscriptionStartDate: '',
+    subscriptionEndDate: '',
     isPanIndia: false,
     allowedStates: [],
     allowedSectors: [],
+  });
+  const [subscriptionInfo, setSubscriptionInfo] = useState({
+    totalMonths: 0,
+    remainingMonths: 0,
+    remainingDays: 0,
   });
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
@@ -24,6 +93,10 @@ const CreateUser = () => {
     fetchSubscriptionPlans();
     fetchStatesAndSectors();
   }, []);
+
+  useEffect(() => {
+    setSubscriptionInfo(calculateSubscriptionDetails(formData.subscriptionStartDate, formData.subscriptionEndDate));
+  }, [formData.subscriptionStartDate, formData.subscriptionEndDate]);
 
   const fetchSubscriptionPlans = async () => {
     try {
@@ -118,7 +191,23 @@ const CreateUser = () => {
       errors.email = 'Please enter a valid email address';
     }
     if (!formData.subscriptionPlan) errors.subscriptionPlan = 'Subscription plan is required';
-    
+
+    if (!formData.subscriptionStartDate) {
+      errors.subscriptionStartDate = 'Subscription start date is required';
+    }
+
+    if (!formData.subscriptionEndDate) {
+      errors.subscriptionEndDate = 'Subscription end date is required';
+    }
+
+    if (formData.subscriptionStartDate && formData.subscriptionEndDate) {
+      const start = new Date(formData.subscriptionStartDate);
+      const end = new Date(formData.subscriptionEndDate);
+      if (end <= start) {
+        errors.subscriptionEndDate = 'End date must be greater than start date';
+      }
+    }
+
     // Validate states if not Pan India
     if (!formData.isPanIndia && formData.allowedStates.length === 0) {
       errors.allowedStates = 'Please select at least one state';
@@ -159,6 +248,13 @@ const CreateUser = () => {
         allowedStates: formData.allowedStates,
         allowedSectors: formData.allowedSectors,
         isPanIndia: formData.isPanIndia,
+        subscription: {
+          plan: formData.subscriptionPlan,
+          allowedStates: formData.allowedStates,
+          allowedSectors: formData.allowedSectors,
+          startDate: formData.subscriptionStartDate,
+          endDate: formData.subscriptionEndDate,
+        },
       };
 
       const response = await createUser(userData);
@@ -176,9 +272,16 @@ const CreateUser = () => {
         email: '',
         role: 'user',
         subscriptionPlan: '',
+        subscriptionStartDate: '',
+        subscriptionEndDate: '',
         isPanIndia: false,
         allowedStates: [],
         allowedSectors: [],
+      });
+      setSubscriptionInfo({
+        totalMonths: 0,
+        remainingMonths: 0,
+        remainingDays: 0,
       });
       setValidationErrors({});
 
@@ -306,6 +409,55 @@ const CreateUser = () => {
               <p className="mt-1 text-sm text-red-600">{validationErrors.subscriptionPlan}</p>
             )}
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="subscriptionStartDate" className="block text-sm font-medium text-gray-700 mb-2">
+                Subscription Start Date *
+              </label>
+              <input
+                id="subscriptionStartDate"
+                name="subscriptionStartDate"
+                type="date"
+                value={formData.subscriptionStartDate}
+                onChange={handleInputChange}
+                required
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  validationErrors.subscriptionStartDate ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {validationErrors.subscriptionStartDate && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.subscriptionStartDate}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="subscriptionEndDate" className="block text-sm font-medium text-gray-700 mb-2">
+                Subscription End Date *
+              </label>
+              <input
+                id="subscriptionEndDate"
+                name="subscriptionEndDate"
+                type="date"
+                value={formData.subscriptionEndDate}
+                onChange={handleInputChange}
+                required
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  validationErrors.subscriptionEndDate ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {validationErrors.subscriptionEndDate && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.subscriptionEndDate}</p>
+              )}
+            </div>
+          </div>
+
+          <SubscriptionSummary
+            planName={subscriptionPlans.find(p => p._id === formData.subscriptionPlan)?.name}
+            startDate={formData.subscriptionStartDate}
+            endDate={formData.subscriptionEndDate}
+            info={subscriptionInfo}
+          />
 
           {/* Pan India Checkbox */}
           {formData.subscriptionPlan && formData.isPanIndia && (
