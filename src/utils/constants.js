@@ -7,5 +7,6 @@
 export const PLAN_TYPES = {
   PLAN_1: 'PLAN_1',
   PLAN_2: 'PLAN_2',
-  PLAN_3: 'PLAN_3'
+  PLAN_3: 'PLAN_3',
+  TRIAL: 'TRIAL'
 };
