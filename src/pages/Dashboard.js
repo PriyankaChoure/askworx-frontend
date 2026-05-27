@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getUserSubscription, getUserProjects, exportProjectsToExcel } from '../services/authService';
 import SubscriptionModal from '../components/SubscriptionModal';
 import SubscriptionBadge from '../components/SubscriptionBadge';
 import SubscriptionWarningBanner from '../components/SubscriptionWarningBanner';
 import ProjectTable from '../components/ProjectTable';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../redux/slices/authSlice';
 
 const normalizeDate = (dateInput) => {
-  if (!dateInput) return null;
+   if (!dateInput) return null;
   // Accept Date object or ISO string.
   const d = new Date(dateInput);
   if (!isNaN(d.getTime())) return d;
@@ -93,7 +95,9 @@ const calculateSubscriptionStatus = (startDateInput, endDateInput) => {
   };
 };
 
-const Dashboard = () => {
+const Dashboard = () => {   
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const [subscription, setSubscription] = useState(null);
   const isFreeUser = user?.isFreeSubscriber;
@@ -145,6 +149,10 @@ const Dashboard = () => {
   fetchProjects();
 }, [filters]);
 
+const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
 
   const fetchSubscription = async (user) => {
     try {
@@ -260,6 +268,16 @@ const Dashboard = () => {
               >
                 View Subscription
               </button>
+              {/* Logout button */}
+          {/* <div className="p-4 border-t border-gray-200"> */}
+            <button
+              onClick={handleLogout}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition"
+            >
+              {/* <span className="mr-3 text-lg">🚪</span> */}
+              Logout
+            </button>
+          {/* </div> */}
             </div>
           </div>
         </div>
