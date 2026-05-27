@@ -69,10 +69,12 @@ const CreateUser = () => {
     name: '',
     email: '',
     role: 'user',
+    isFreeSubscriber: false,
     subscriptionPlan: '',
     subscriptionStartDate: '',
     subscriptionEndDate: '',
     isPanIndia: false,
+    isTrial: false,
     allowedStates: [],
     allowedSectors: [],
   });
@@ -148,10 +150,13 @@ const CreateUser = () => {
       if (name === 'subscriptionPlan') {
         const selectedPlan = subscriptionPlans.find(p => p._id === value);
         const isPanIndia = selectedPlan?.planType === PLAN_TYPES.PLAN_3;
+        const isTrial = selectedPlan?.planType === PLAN_TYPES.TRIAL ? true : false;
         setFormData(prev => ({
           ...prev,
           [name]: value,
           isPanIndia,
+          isTrial,
+          isFreeSubscriber: isTrial,
           allowedStates: isPanIndia ? [] : prev.allowedStates
         }));
       } else {
@@ -248,6 +253,8 @@ const CreateUser = () => {
         allowedStates: formData.allowedStates,
         allowedSectors: formData.allowedSectors,
         isPanIndia: formData.isPanIndia,
+        isTrial: formData.isTrial,
+        isFreeSubscriber: formData.isTrial,
         subscription: {
           plan: formData.subscriptionPlan,
           allowedStates: formData.allowedStates,
