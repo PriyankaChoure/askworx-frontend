@@ -55,13 +55,21 @@ export const getUserProjects = async (filters = {}) => {
 
 export const exportProjectsToExcel = async (filters = {}) => {
   const params = new URLSearchParams();
-  if (filters.months && filters.months.length > 0) {
-    filters.months.forEach(month => params.append('months', month));
+  if (filters.dateFilter.fromDate) {
+    params.append('fromDate', filters.dateFilter.fromDate);
+  }
+  if (filters.dateFilter.toDate) {
+    params.append('toDate', filters.dateFilter.toDate);
   }
   if (filters.sectors && filters.sectors.length > 0) {
     filters.sectors.forEach(sector => params.append('sectors', sector));
+    // params.append('sectors', filters.sectors);
   }
-
+  if (filters.states && filters.states.length > 0) {
+    filters.states.forEach(state => params.append('states', state));
+    // params.append('states', filters.states);
+  }
+  
   const queryString = params.toString();
   const url = queryString ? `/users/projects/export/excel?${queryString}` : '/users/projects/export/excel';
   
