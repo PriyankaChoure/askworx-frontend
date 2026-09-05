@@ -25,11 +25,6 @@ const normalizeDate = (dateInput) => {
   return null;
 };
 
-const formatDate = (dateInput) => {
-  const d = normalizeDate(dateInput);
-  return d ? d.toLocaleDateString() : 'N/A';
-};
-
 const calculateSubscriptionStatus = (startDateInput, endDateInput) => {
   const startDate = normalizeDate(startDateInput);
   const endDate = normalizeDate(endDateInput);
@@ -113,8 +108,8 @@ const Dashboard = () => {
   states: [],
   sectors: [],
   dateFilter: {
-    type: 'LAST_7_DAYS', // or 'MONTHS'
-    months: []
+    fromDate: null,
+    toDate: null,
   }
 });
 
@@ -131,13 +126,13 @@ const Dashboard = () => {
     if (!subscription) {
       return;
     }
-
+    const today = new Date();
     setFilters({
       states: subscription.allowedStates?.map(state => state.name) || [],
       sectors: subscription.allowedSectors?.map(sector => sector.name) || [],
       dateFilter: {
-        type: 'Last_7_Days',
-        months: [],
+        fromDate: today.toISOString().split('T')[0], // default to today
+        toDate: today.toISOString().split('T')[0], // default to today
       }
     });
     // fetchProjects();
