@@ -68,7 +68,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-gray-700 pt-8 text-center">
-          <p className="text-gray-400">&copy; Copyright Ask Worx. Design & Development By Hashcrypt Technologies</p>
+          <p className="text-gray-400">&copy; Copyright Ask Worx</p>
         </div>
       </div>
     </footer>

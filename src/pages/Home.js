@@ -1,4 +1,5 @@
 import React from 'react';
+import TopContact from '../components/home/TopContact';
 import Navbar from '../components/home/Navbar';
 import Hero from '../components/home/Hero';
 import Services from '../components/home/Services';
@@ -10,6 +11,7 @@ import Footer from '../components/home/Footer';
 const Home = () => {
   return (
     <div className="min-h-screen">
+      <TopContact />
       <Navbar />
       <Hero />
       <Services />

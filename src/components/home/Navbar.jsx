@@ -8,23 +8,26 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="text-2xl font-bold text-gray-800">
-              Ask Worx
+              <img className="w-14 md:w-20 lg:w-32"
+                src="/images/LogoNew.jpg"
+                alt="AskWorx"
+              />
             </Link>
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/" className="text-gray-700 hover:text-[#ad7429] hover:underline hover:font-bold px-3 py-2 rounded-md text-sm font-medium">
               Home
             </Link>
-            <a href="/about" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+            <a href="/about" className="text-gray-700 hover:text-[#ad7429] hover:underline hover:font-bold px-3 py-2 rounded-md text-sm font-medium">
               About Us
             </a>
-            <a href="#services" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+            <a href="/service" className="text-gray-700 hover:text-[#ad7429] hover:underline hover:font-bold px-3 py-2 rounded-md text-sm font-medium">
               Services
             </a>
-            <a href="#plans" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+            <a href="/plan" className="text-gray-700 hover:text-[#ad7429] hover:underline hover:font-bold px-3 py-2 rounded-md text-sm font-medium">
               Plans
             </a>
-            <a href="#contact" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+            <a href="/contact" className="text-gray-700 hover:text-[#ad7429] hover:underline hover:font-bold px-3 py-2 rounded-md text-sm font-medium">
               Contact Us
             </a>
             <Link to="/login" className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
