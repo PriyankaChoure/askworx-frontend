@@ -1,15 +1,24 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white py-16">
+    <footer className="bg-[#2e2751] text-white py-16">
+      <div className="">
+        <Link to="/" className="">
+          <img className="w-20 md:w-20 lg:w-32"
+            src="/images/NewLogoWhite.png"
+            alt="AskWorx"
+          />
+        </Link>
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="text-xl font-bold mb-6 text-white">Company</h3>
             <ul className="space-y-3">
               <li><a href="#about" className="text-gray-300 hover:text-white transition-colors duration-300">About Us</a></li>
-              <li><a href="#services" className="text-gray-300 hover:text-white transition-colors duration-300">Our Services</a></li>
+              <li><a href="/service" className="text-gray-300 hover:text-white transition-colors duration-300">Our Services</a></li>
               <li><a href="#plans" className="text-gray-300 hover:text-white transition-colors duration-300">Plan</a></li>
               <li><a href="#contact" className="text-gray-300 hover:text-white transition-colors duration-300">Contact us</a></li>
             </ul>
@@ -17,10 +26,10 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-6 text-white">Products</h3>
             <ul className="space-y-3">
-              <li><a href="#services" className="text-gray-300 hover:text-white transition-colors duration-300">Industrial Project</a></li>
-              <li><a href="#services" className="text-gray-300 hover:text-white transition-colors duration-300">Residential Project</a></li>
-              <li><a href="#services" className="text-gray-300 hover:text-white transition-colors duration-300">Commercial Project</a></li>
-              <li><a href="#services" className="text-gray-300 hover:text-white transition-colors duration-300">Government Project</a></li>
+              <li><a href="/service" className="text-gray-300 hover:text-white transition-colors duration-300">Industrial Project</a></li>
+              <li><a href="/service" className="text-gray-300 hover:text-white transition-colors duration-300">Residential Project</a></li>
+              <li><a href="/service" className="text-gray-300 hover:text-white transition-colors duration-300">Commercial Project</a></li>
+              <li><a href="/service" className="text-gray-300 hover:text-white transition-colors duration-300">Government Project</a></li>
             </ul>
           </div>
           <div>

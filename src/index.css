@@ -10,3 +10,6 @@ body {
 .test-red {
   color: red !important;
 }
+html {
+  scroll-behavior: smooth;
+}

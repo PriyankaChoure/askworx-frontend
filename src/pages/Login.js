@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../redux/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import SubscriptionWarningBanner from '../components/SubscriptionWarningBanner';
+import { Link } from 'react-router-dom';
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -10,6 +12,7 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isLoading, error, subscriptionWarning: reduxSubscriptionWarning } = useSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Update local state when subscription warning from redux changes
   useEffect(() => {
@@ -30,7 +33,7 @@ const Login = () => {
     try {
       const result = await dispatch(login(credentials)).unwrap();
       console.log('Login successful:', result);
-      
+
       // Check if there's a subscription warning but still allow login
       if (result.subscriptionWarning) {
         // Store warning info that will be shown in Dashboard
@@ -58,6 +61,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+
       {/* Show subscription warning if present */}
       {subscriptionWarning && (
         <div className="fixed top-0 left-0 right-0 z-50">
@@ -69,6 +73,14 @@ const Login = () => {
       )}
 
       <div className="max-w-md w-full space-y-8 mt-20">
+        <div className=" flex justify-center">
+          <Link to="/">
+            <img className="w-20 md:w-30 lg:w-32"
+              src="/images/LogoNew.jpg"
+              alt="AskWorx"
+            />
+          </Link>
+        </div>
         <div className="text-center">
           <button
             onClick={() => navigate('/')}
@@ -94,17 +106,24 @@ const Login = () => {
                 onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
               />
             </div>
-            <div>
+            <div className="relative">
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={credentials.password}
                 onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}

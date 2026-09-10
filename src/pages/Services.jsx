@@ -19,7 +19,7 @@ const Services = () => {
       <PageBanner title="Our Services" bgImageUrl="/images/branding/OurServiceBanner.jpg" />
 
       {/* Sectors */}
-      <section className="bg-gray-50 px-4 py-16 sm:py-20">
+      <section id="sectors" className="bg-gray-50 px-4 py-16 sm:py-20" >
         <div className="mx-auto max-w-7xl">
 
           <SectionTitle
@@ -41,7 +41,7 @@ const Services = () => {
 
 
       {/* Project stages */}
-      <section className="px-4 py-16 sm:py-20 bg-[#00008013]">
+      <section id="project-stages" className="px-4 py-16 sm:py-20 bg-[#00008013]">
         <div className="mx-auto max-w-7xl p-4">
 
           <SectionTitle
@@ -77,7 +77,7 @@ const Services = () => {
         </div>
       </section>
       {/* To whom we serve */}
-      <section className="bg-gray-50 px-4 py-16 sm:py-20">
+      <section id="audiences" className="bg-gray-50 px-4 py-16 sm:py-20">
         <div className="mx-auto max-w-7xl">
           <SectionTitle title="To Whom We Serve" />
 
@@ -111,7 +111,7 @@ const Services = () => {
       </section>
 
       {/* Customer details */}
-      <section className="bg-[#00008013] px-4 py-16">
+      <section id="customer-details" className="bg-[#00008013] px-4 py-16">
         <div className="mx-auto max-w-5xl">
 
           <SectionTitle className="text-[#2e2751]"
